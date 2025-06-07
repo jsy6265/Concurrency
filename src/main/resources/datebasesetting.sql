@@ -1,0 +1,25 @@
+-- 데이터베이스 생성
+CREATE DATABASE IF NOT EXISTS concurrency CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- 데이터베이스 선택
+USE concurrency;
+
+-- product 테이블 생성
+CREATE TABLE IF NOT EXISTS product (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    qty BIGINT NOT NULL,
+    create_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    update_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- account 테이블 생성
+CREATE TABLE IF NOT EXISTS account (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    account_number VARCHAR(255) NOT NULL,
+    balance BIGINT NOT NULL,
+    version BIGINT NOT NULL DEFAULT 0
+);
+
+SELECT *
+FROM product;
