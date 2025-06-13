@@ -50,7 +50,7 @@ public class ProductService {
     //  1. JPA를 사용하면 실제 DB로 flush 되는 시점을 정확히 알 수 없다
     //  2. 서버가 scale out 되면 동시에 메서드 호출이 가능하다.
     @Transactional
-    public void updateProduct_Sysnchronized(Long id, Long qty){
+    public synchronized void updateProduct_Sysnchronized(Long id, Long qty){
         final Product product = productRepository.findById(id).orElseThrow();
 
         product.updateQty(qty);

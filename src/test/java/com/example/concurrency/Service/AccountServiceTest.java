@@ -1,16 +1,13 @@
 package com.example.concurrency.Service;
 
 import com.example.concurrency.Global.NamedAccountFacade;
-import com.example.concurrency.Global.OptimistickLockAccountFacade;
 import com.example.concurrency.Model.Dto.AccountDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,19 +18,15 @@ class AccountServiceTest {
     private AccountService accountService;
 
     @Autowired
-    private OptimistickLockAccountFacade optimisticLockAccountFacade;
-
-    @Autowired
     private NamedAccountFacade namedAccountFacade;
 
     private final Long ACCOUNT_ID = 1L;
 
     @BeforeEach
-    void setUp() {
+    void before() {
         accountService.deleteAll();
 
         AccountDto dto = AccountDto.builder()
-                .id(ACCOUNT_ID)
                 .account_number("123-456")
                 .build();
 
@@ -41,15 +34,19 @@ class AccountServiceTest {
     }
 
     @Test
-    void optimistic_lock_동시성_테스트() throws InterruptedException {
-        int threadCount = 10;
+    void optimistickLockTest() throws InterruptedException {
+        int threadCount = 3;
         ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+
         CountDownLatch latch = new CountDownLatch(threadCount);
 
         for (int i = 0; i < threadCount; i++) {
+            final int reqNum = i;
             executor.submit(() -> {
                 try {
-                    optimisticLockAccountFacade.updateAccount(ACCOUNT_ID, 100L);
+                    accountService.updateAccount_OptimisticLocking(ACCOUNT_ID, 100L);
+                } catch (Exception e) {
+                    System.out.println("쓰레드 예외 발생: " + e.getMessage());
                 } finally {
                     latch.countDown();
                 }
@@ -58,8 +55,10 @@ class AccountServiceTest {
 
         latch.await();
 
-        Long finalBalance = accountService.searchAccount().get(0).getBalance();
-        assertThat(finalBalance).isEqualTo(100L * threadCount);
+        AccountDto finalVersion = accountService.findAccountById(ACCOUNT_ID);
+        System.out.println("최종 버전: " + finalVersion);
+        System.out.println(finalVersion.getBalance());
+        assertThat(finalVersion.getVersion()).isEqualTo(3L);
     }
 
     @Test

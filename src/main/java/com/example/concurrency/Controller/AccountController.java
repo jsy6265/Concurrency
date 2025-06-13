@@ -1,7 +1,6 @@
 package com.example.concurrency.Controller;
 
 import com.example.concurrency.Global.NamedAccountFacade;
-import com.example.concurrency.Global.OptimistickLockAccountFacade;
 import com.example.concurrency.Model.Dto.AccountDto;
 import com.example.concurrency.Service.AccountService;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +14,6 @@ import java.util.List;
 public class AccountController {
     private final AccountService accountService;
     private final NamedAccountFacade namedAccountFacade;
-    private final OptimistickLockAccountFacade optimistickLockAccountFacade;
 
     @PostMapping
     public void createProduct(@ModelAttribute AccountDto dto){
@@ -29,7 +27,7 @@ public class AccountController {
 
     @PatchMapping("/optimisticLocking")
     public void updateAccount_OptimisticLocking(Long id, Long balance){
-        optimistickLockAccountFacade.updateAccount(id, balance);
+        accountService.updateAccount_OptimisticLocking(id, balance);
     }
 
     @PatchMapping("/namedLocking")
